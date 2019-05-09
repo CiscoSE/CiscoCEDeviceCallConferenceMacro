@@ -1,0 +1,19 @@
+<Extensions>
+  <Version>1.5</Version>
+  <Panel>
+    <PanelId>speed_dial</PanelId>
+    <Type>Statusbar</Type>
+    <Icon>Handset</Icon>
+    <Order>1</Order>
+    <Color>#C2C2C2</Color>
+    <Name>Zoom</Name>
+  </Panel>
+  <Panel>
+    <PanelId>call_bjn</PanelId>
+    <Type>Statusbar</Type>
+    <Icon>Handset</Icon>
+    <Order>2</Order>
+    <Color>#07C1E4</Color>
+    <Name>BlueJeans</Name>
+  </Panel>
+</Extensions>
