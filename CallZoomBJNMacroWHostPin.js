@@ -19,6 +19,7 @@ const xapi = require('xapi');
 
 const BTN_ZOOM_WIDGET = 'speed_dial';
 const BTN_BJN_WIDGET = 'call_bjn';
+const BTN_PHONE_WIDGET = 'call_phone';
 const ZOOMSPEED_DIAL_NUMBER = 'meeting@zoomcrc.com';
 const BJNSPEED_DIAL_NUMBER = 'meet@bjn.vc';
 
@@ -35,11 +36,13 @@ const CALL_TYPES = {
 
 const DIALPAD_ID = 'conferencedialpad';
 const DIALHOSTPIN_ID = 'conferencepin';
+const PHONECALLDIALPAD_ID = 'phonedialpad';
 
 
 // to keep track of specific conference calls
 var isInZoomCall=0;
 var isInBJNCall = 0;
+var isInPhoneCall = 0;
 
 var confIDBlueJeans='';
 var fixedStringToDial='';
@@ -57,6 +60,7 @@ xapi.event.on('CallDisconnect', (event) => {
         {isInZoomCall = 0};
     if(isInBJNCall)
         {isInBJNCall = 0};
+    isInPhoneCall=0;
     });
 
 function showDialPad(text, template){
@@ -64,7 +68,7 @@ function showDialPad(text, template){
     xapi.command("UserInterface Message TextInput Display", {
           InputType: KEYBOARD_TYPES.NUMERIC
         , Placeholder: template
-        , Title: "Meeting ID input"
+        , Title: "Conference ID"
         , Text: text
         , SubmitText: "Submit" 
         , FeedbackId: DIALPAD_ID
@@ -83,6 +87,19 @@ function showDialPadPINEntry(text, template){
     }).catch((error) => { console.error(error); });
 }
 
+function showDialPadPhoneCall(text, template){
+
+    xapi.command("UserInterface Message TextInput Display", {
+          InputType: KEYBOARD_TYPES.NUMERIC
+        , Placeholder: template
+        , Title: "Number to Dial"
+        , Text: text
+        , SubmitText: "Submit" 
+        , FeedbackId: PHONECALLDIALPAD_ID
+    }).catch((error) => { console.error(error); });
+}
+
+
 function invokeZoomConferenceIDInput()
 {
     xapi.command('UserInterface Message TextLine Display', { Text: 'Please wait for the system to connect, and then enter the Zoom conference ID:', X:1, Y:1, Duration:10});
@@ -94,6 +111,13 @@ function invokeBJNConferenceIDInput()
     xapi.command('UserInterface Message TextLine Display', { Text: 'Please wait for the system to connect, and then enter the BlueJeans conference ID:', X:1, Y:1, Duration:10});
     showDialPad("Please enter the BlueJeans conference ID:","XXXXXXX#" );
 }
+
+function invokePhoneCallNumberInput()
+{
+    xapi.command('UserInterface Message TextLine Display', { Text: 'Please provide the phone number you wish to dial:', X:1, Y:1, Duration:10});
+    showDialPadPhoneCall("Please enter the phone number (with area code):","XXXXXXXXXX" );
+}
+
 
 // handle requests to dial into conferences. If already in a conference call, assume they entered the wrong 
 // conference ID and let them try again
@@ -143,6 +167,12 @@ xapi.event.on('UserInterface Extensions Panel Clicked', (event) => {
         xapi.command("dial", {Number: BJNSPEED_DIAL_NUMBER});
         isInBJNCall = 1;
         }
+    }
+    if(event.PanelId == BTN_PHONE_WIDGET){
+            if(!isInBJNCall && !isInZoomCall && !isInPhoneCall)
+            {
+                invokePhoneCallNumberInput();
+            }
    }
 });
 
@@ -196,6 +226,7 @@ xapi.event.on('UserInterface Message TextInput Response', (event) => {
                 
                 }); */
                 }
+
             });
 
             break;
@@ -225,6 +256,22 @@ xapi.event.on('UserInterface Message TextInput Response', (event) => {
                     console.log('dialing: ',fixedStringToDial);
                     xapi.command('Call DTMFSend', { DTMFString: fixedStringToDial});
                     });
+
+            break;
+
+            case PHONECALLDIALPAD_ID:
+                // just dial a phone number
+                console.log("Dialing a phone number. Entered: ",event.Text);
+                fixedStringToDial=event.Text;
+                // if 10 digits, assume North America dialing plan and prefix with +1, otherwise just let them dial whatever they entered
+                if (fixedStringToDial.length==10) 
+                {
+                    console.log('NA dial plan, fixing string...');
+                    fixedStringToDial='+1'+fixedStringToDial;
+                }
+                console.log("Actual number to dial: ",fixedStringToDial);
+                xapi.command("dial", {Number: fixedStringToDial});
+                isInPhoneCall=1;
 
             break;
 
