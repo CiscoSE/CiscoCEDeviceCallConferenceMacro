@@ -17,6 +17,14 @@
     <Name>BlueJeans</Name>
   </Panel>
   <Panel>
+    <PanelId>call_poly</PanelId>
+    <Type>Statusbar</Type>
+    <Icon>Language</Icon>
+    <Order>4</Order>
+    <Color>#07C1E4</Color>
+    <Name>Poly</Name>
+  </Panel>
+  <Panel>
     <PanelId>speed_dial</PanelId>
     <Type>Statusbar</Type>
     <Icon>Camera</Icon>

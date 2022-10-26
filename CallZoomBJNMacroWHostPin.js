@@ -19,9 +19,11 @@ const xapi = require('xapi');
 
 const BTN_ZOOM_WIDGET = 'speed_dial';
 const BTN_BJN_WIDGET = 'call_bjn';
+const BTN_POLY_WIDGET = 'call_poly';
 const BTN_PHONE_WIDGET = 'call_phone';
 const ZOOMSPEED_DIAL_NUMBER = 'meeting@zoomcrc.com';
 const BJNSPEED_DIAL_NUMBER = 'meet@bjn.vc';
+const PLYSPEED_DIAL_NUMBER = '455806589@t.plcm.vc';
 
 const KEYBOARD_TYPES = {
     NUMERIC     :   'Numeric'
@@ -43,6 +45,7 @@ const PHONECALLDIALPAD_ID = 'phonedialpad';
 var isInZoomCall=0;
 var isInBJNCall = 0;
 var isInPhoneCall = 0;
+var isInPolyCall=0;
 
 var confIDBlueJeans='';
 var fixedStringToDial='';
@@ -60,6 +63,8 @@ xapi.event.on('CallDisconnect', (event) => {
         {isInZoomCall = 0};
     if(isInBJNCall)
         {isInBJNCall = 0};
+    if(isInPolyCall)
+        {isInPolyCall = 0};
     isInPhoneCall=0;
     });
 
@@ -99,6 +104,11 @@ function showDialPadPhoneCall(text, template){
     }).catch((error) => { console.error(error); });
 }
 
+function invokePolyConferenceIDInput()
+{
+    xapi.command('UserInterface Message TextLine Display', { Text: 'Please wait for the system to connect, and then enter the Poly conference ID:', X:1, Y:1, Duration:10});
+    showDialPad("Please enter the Poly conference ID:","XXXXXXX#" );
+}
 
 function invokeZoomConferenceIDInput()
 {
@@ -131,17 +141,27 @@ xapi.event.on('UserInterface Extensions Panel Clicked', (event) => {
       if (call[0].CallbackNumber.includes(ZOOMSPEED_DIAL_NUMBER)) {
         isInZoomCall=1;
         isInBJNCall=0;
+        isInPolyCall=0;
 
         console.log('Detected a Zoom call');
 
       } else if (call[0].CallbackNumber.includes(BJNSPEED_DIAL_NUMBER)) {
         isInBJNCall=1;
         isInZoomCall=0;
+        isInPolyCall=0;
         console.log('Detected a BJN call');
+      }
+      else if (call[0].CallbackNumber.includes(PLYSPEED_DIAL_NUMBER)) {
+        isInZoomCall=0;
+        isInBJNCall=0;
+        isInPolyCall=1;
+        console.log('Detected a Poly call');
+
       }
       else {
         isInZoomCall=0;
         isInBJNCall=0;
+        isInPolyCall=0;
       }
     });
 
@@ -166,6 +186,17 @@ xapi.event.on('UserInterface Extensions Panel Clicked', (event) => {
         {
         xapi.command("dial", {Number: BJNSPEED_DIAL_NUMBER});
         isInBJNCall = 1;
+        }
+    }
+    if(event.PanelId == BTN_POLY_WIDGET){
+        if(isInPolyCall)
+        {
+            invokePolyConferenceIDInput();
+        }
+        else if (!isInBJNCall && !isInZoomCall)
+        {
+            xapi.command("dial", {Number: PLYSPEED_DIAL_NUMBER});
+            isInPolyCall=1;
         }
     }
     if(event.PanelId == BTN_PHONE_WIDGET){
@@ -200,6 +231,19 @@ xapi.event.on('UserInterface Message TextInput Response', (event) => {
                     console.log('dialing: ',fixedStringToDial);
                     xapi.command('Call DTMFSend', { DTMFString: fixedStringToDial});
                 }
+                else if (call[0].CallbackNumber.includes(PLYSPEED_DIAL_NUMBER)) {
+                    // for Zoom, just dial the Conference ID
+                    console.log('dialing Poly conference ID');
+                    console.log('original string: ',event.Text);
+                    // fix the string to dial if not properly formatted. In the case of Poly conference ID, needs to have # at the end
+                    fixedStringToDial=event.Text;
+                    if (fixedStringToDial.length>0)
+                    {
+                        if (fixedStringToDial.charAt(fixedStringToDial.length-1)!='#') {fixedStringToDial=fixedStringToDial+'#'};
+                    }  
+                    console.log('dialing: ',fixedStringToDial);
+                    xapi.command('Call DTMFSend', { DTMFString: fixedStringToDial});
+                }
                 else if (call[0].CallbackNumber.includes(BJNSPEED_DIAL_NUMBER)) 
                 {
                     // for BlueJeans, you have to also prompt the Host PIN, then dial the whole thing later
@@ -213,18 +257,7 @@ xapi.event.on('UserInterface Message TextInput Response', (event) => {
                     });
                     console.log('Done prompting Host PIN text input...');
 
-/*
-                    sleep(200).then(() => { //this is a necessary trick to get it working with multiple touch panels to not mess up event-clears from other panels
-                        xapi.command("UserInterface Message TextInput Display", {
-                            InputType: KEYBOARD_TYPES.PIN
-                            , Placeholder: "XXXXXXXX#" 
-                            , Title: "Enter Host pin followed by # or just enter #"
-                            , Text: 'Host PIN:' 
-                            , SubmitText: "Submit" 
-                            , FeedbackId: DIALHOSTPIN_ID
-                        }).catch((error) => { console.error(error); });        
-                
-                }); */
+
                 }
 
             });
@@ -291,6 +324,9 @@ xapi.status.on('Call RemoteNumber', (remoteNumber) => {
 	if(remoteNumber.includes(ZOOMSPEED_DIAL_NUMBER)){
         invokeZoomConferenceIDInput();
     	}
+    else if(remoteNumber.includes(PLYSPEED_DIAL_NUMBER) ){
+            invokePolyConferenceIDInput();
+        }
 	else if(remoteNumber.includes(BJNSPEED_DIAL_NUMBER) ){
         invokeBJNConferenceIDInput();
     	}
