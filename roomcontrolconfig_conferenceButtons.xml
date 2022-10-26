@@ -25,7 +25,7 @@
     <Name>Poly</Name>
   </Panel>
   <Panel>
-    <PanelId>speed_dial</PanelId>
+    <PanelId>call_zoom</PanelId>
     <Type>Statusbar</Type>
     <Icon>Camera</Icon>
     <Order>1</Order>

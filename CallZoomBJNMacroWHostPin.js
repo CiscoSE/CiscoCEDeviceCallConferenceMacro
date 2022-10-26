@@ -23,7 +23,7 @@ const BTN_POLY_WIDGET = 'call_poly';
 const BTN_PHONE_WIDGET = 'call_phone';
 const ZOOMSPEED_DIAL_NUMBER = 'meeting@zoomcrc.com';
 const BJNSPEED_DIAL_NUMBER = 'meet@bjn.vc';
-const PLYSPEED_DIAL_NUMBER = '455806589@t.plcm.vc';
+const PLYSPEED_DIAL_NUMBER = '123456789@t.plcm.vc';
 
 const KEYBOARD_TYPES = {
     NUMERIC     :   'Numeric'
