@@ -6,7 +6,9 @@ To try it, first create three Panels without any pages (so they are just top lev
 
 Then load the Javascript code included in the the **CallZoomBJNMacroWHostPin.js** file into a new Macro in the Macro editor of your Cisco room video device and enable it. 
 
-Once either button is pressed, it will call a cloud based conferencing service. Once the call is connected, it will prompt for the conference ID using a TextInput form on the Touch10 device (mains screen if a Cisco DX80or Desk device) and , if the conferencing service requires it, it will also prompt for a PIN. Once it is done collecting the Conference ID and Host PIN (if relevant) it will dial them so that the user can join the conference. If an error is made in entering either ID, the user can press the panel button for the relevant service again and it will detect that it is already in the call and prompt for the IDs again. 
+You might need to edit the ZOOMSPEED_DIAL_NUMBER, BJNSPEED_DIAL_NUMBER or PLYSPEED_DIAL_NUMBER constants in the macro pro provide a properly formatted dial strings which can be used when joining VTCs to the corresponding video interop service via H.323 or SIP.  
+
+Once one of the buttons is pressed, it will call a cloud based conferencing service. Once the call is connected, it will prompt for the conference ID using a TextInput form on the Touch10 device (mains screen if a Cisco DX80or Desk device) and , if the conferencing service requires it, it will also prompt for a PIN. Once it is done collecting the Conference ID and Host PIN (if relevant) it will dial them so that the user can join the conference. If an error is made in entering either ID, the user can press the panel button for the relevant service again and it will detect that it is already in the call and prompt for the IDs again. 
 
 A "Call Phone" Button is also provided in the template and handled in the Macro code to prompt for and then dial a numeric number provided. If it is 10 digits, the Macro will pre-pend "+1" to it since it will assum North America PSTN dial plan. The video endpoint must be registred to a solution that supports PSTN Calling for that button to work. 
 

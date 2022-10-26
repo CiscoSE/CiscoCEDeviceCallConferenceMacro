@@ -17,13 +17,13 @@
  */
 const xapi = require('xapi');
 
-const BTN_ZOOM_WIDGET = 'speed_dial';
+const BTN_ZOOM_WIDGET = 'call_zoom';
 const BTN_BJN_WIDGET = 'call_bjn';
 const BTN_POLY_WIDGET = 'call_poly';
 const BTN_PHONE_WIDGET = 'call_phone';
 const ZOOMSPEED_DIAL_NUMBER = 'meeting@zoomcrc.com';
 const BJNSPEED_DIAL_NUMBER = 'meet@bjn.vc';
-const PLYSPEED_DIAL_NUMBER = '123456789@t.plcm.vc';
+const PLYSPEED_DIAL_NUMBER = '242539444@t.plcm.vc';
 
 const KEYBOARD_TYPES = {
     NUMERIC     :   'Numeric'
@@ -171,7 +171,7 @@ xapi.event.on('UserInterface Extensions Panel Clicked', (event) => {
         {
             invokeZoomConferenceIDInput();
         }
-        else if (!isInBJNCall)
+        else if (!isInBJNCall && !isInPolyCall)
         {
             xapi.command("dial", {Number: ZOOMSPEED_DIAL_NUMBER});
             isInZoomCall=1;
@@ -182,7 +182,7 @@ xapi.event.on('UserInterface Extensions Panel Clicked', (event) => {
         {
             invokeBJNConferenceIDInput();
         }
-        else if (!isInZoomCall)
+        else if (!isInZoomCall && !isInPolyCall)
         {
         xapi.command("dial", {Number: BJNSPEED_DIAL_NUMBER});
         isInBJNCall = 1;
@@ -200,7 +200,7 @@ xapi.event.on('UserInterface Extensions Panel Clicked', (event) => {
         }
     }
     if(event.PanelId == BTN_PHONE_WIDGET){
-            if(!isInBJNCall && !isInZoomCall && !isInPhoneCall)
+            if(!isInBJNCall && !isInZoomCall && (!isInPolyCall && !isInPhoneCall))
             {
                 invokePhoneCallNumberInput();
             }
